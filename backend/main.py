@@ -44,39 +44,42 @@ def get_connection():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    with get_connection() as conn:
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS applications (
-                id SERIAL PRIMARY KEY,
-                company TEXT NOT NULL,
-                role TEXT NOT NULL,
-                location TEXT DEFAULT '',
-                applied_date DATE,
-                status TEXT DEFAULT 'Applied',
-                job_type TEXT DEFAULT '',
-                job_url TEXT DEFAULT '',
-                notes TEXT DEFAULT '',
-                follow_up_date DATE,
-                follow_up_done BOOLEAN DEFAULT FALSE,
-                interview_date DATE,
-                interview_time TEXT DEFAULT '',
-                interview_round TEXT DEFAULT '',
-                interview_mode TEXT DEFAULT '',
-                interviewer TEXT DEFAULT '',
-                interview_notes TEXT DEFAULT '',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
+    try:
+        with get_connection() as conn:
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS applications (
+                    id SERIAL PRIMARY KEY,
+                    company TEXT NOT NULL,
+                    role TEXT NOT NULL,
+                    location TEXT DEFAULT '',
+                    applied_date DATE,
+                    status TEXT DEFAULT 'Applied',
+                    job_type TEXT DEFAULT '',
+                    job_url TEXT DEFAULT '',
+                    notes TEXT DEFAULT '',
+                    follow_up_date DATE,
+                    follow_up_done BOOLEAN DEFAULT FALSE,
+                    interview_date DATE,
+                    interview_time TEXT DEFAULT '',
+                    interview_round TEXT DEFAULT '',
+                    interview_mode TEXT DEFAULT '',
+                    interviewer TEXT DEFAULT '',
+                    interview_notes TEXT DEFAULT '',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
 
-        conn.execute("""
-            ALTER TABLE applications
-            ADD COLUMN IF NOT EXISTS follow_up_date DATE
-        """)
+            conn.execute("""
+                ALTER TABLE applications
+                ADD COLUMN IF NOT EXISTS follow_up_date DATE
+            """)
 
-        conn.execute("""
-            ALTER TABLE applications
-            ADD COLUMN IF NOT EXISTS follow_up_done BOOLEAN DEFAULT FALSE
-        """)
+            conn.execute("""
+                ALTER TABLE applications
+                ADD COLUMN IF NOT EXISTS follow_up_done BOOLEAN DEFAULT FALSE
+            """)
+    except Exception as e:
+        print(f"[Lifespan Warning] Could not initialize database tables: {e}")
 
     yield
 

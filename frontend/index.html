@@ -1026,11 +1026,16 @@ tbody tr:hover { background:#fafbfe; }
 (() => {
   const $ = id => document.getElementById(id);
 
+  // Base API path: Uses origin in deployed environment (e.g. Vercel), fallback to localhost if opened via file://
+  const BASE_API = window.location.origin && window.location.origin !== "null" && !window.location.origin.startsWith("file:")
+    ? window.location.origin
+    : "http://127.0.0.1:8000";
+
   // Existing application database API.
-  const API = "http://127.0.0.1:8000/api/applications";
+  const API = `${BASE_API}/api/applications`;
 
   // Resume Analyzer API.
-  const RESUME_API = "http://127.0.0.1:8000/api/resume/analyze";
+  const RESUME_API = `${BASE_API}/api/resume/analyze`;
 
   const storageKey = "smartJobTrackerApplicationsV1";
 
