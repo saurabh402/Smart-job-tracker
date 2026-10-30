@@ -1,0 +1,2001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Job Tracker</title>
+
+<style>
+:root {
+  --navy:#12233f;
+  --blue:#4169e1;
+  --teal:#12a594;
+  --bg:#f5f7fb;
+  --text:#172b4d;
+  --muted:#697586;
+  --border:#e6ebf2;
+  --white:#fff;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family:Inter,"Segoe UI",Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  font-size:14px;
+}
+button,input,select,textarea { font:inherit; }
+button { cursor:pointer; transition:.2s; }
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible {
+  outline:3px solid #4169e133;
+}
+[hidden] { display:none !important; }
+
+.app { min-height:100vh; display:flex; }
+.sidebar {
+  width:245px;
+  background:var(--navy);
+  color:white;
+  padding:25px 15px;
+  display:flex;
+  flex-direction:column;
+  flex-shrink:0;
+}
+.brand {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:21px;
+  font-weight:800;
+  margin:0 8px 35px;
+}
+.brand-icon {
+  width:35px;
+  height:35px;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(135deg,#4169e1,#12b8a6);
+  border-radius:11px;
+}
+.brand em { color:#86e4d7; font-style:normal; }
+.nav-label {
+  font-size:10px;
+  color:#9fb0cc;
+  font-weight:800;
+  letter-spacing:1.4px;
+  margin:0 12px 12px;
+}
+.nav { display:grid; gap:6px; }
+.nav button {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  width:100%;
+  border:0;
+  border-radius:9px;
+  padding:12px;
+  background:transparent;
+  color:#d8e0ef;
+  text-align:left;
+}
+.nav button:hover,.nav button.active {
+  background:#2a4065;
+  color:white;
+}
+.nav-icon { width:20px; text-align:center; font-size:17px; }
+.sidebar-bottom {
+  margin-top:auto;
+  padding:18px 10px 0;
+  color:#aebbd0;
+  font-size:12px;
+  line-height:1.8;
+  border-top:1px solid #334765;
+}
+
+.main { flex:1; min-width:0; }
+.topbar {
+  min-height:72px;
+  background:white;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+  padding:14px 30px;
+  position:sticky;
+  top:0;
+  z-index:5;
+}
+.search-wrap { position:relative; width:min(400px,60%); }
+.search-wrap span {
+  position:absolute;
+  left:13px;
+  top:9px;
+  color:#8995a8;
+  font-size:18px;
+}
+.search-wrap input {
+  width:100%;
+  padding:11px 12px 11px 38px;
+  border:1px solid var(--border);
+  background:#f8f9fc;
+  border-radius:9px;
+}
+.profile { display:flex; align-items:center; gap:10px; }
+.avatar {
+  width:38px;
+  height:38px;
+  border-radius:12px;
+  display:grid;
+  place-items:center;
+  background:#e5ebff;
+  color:#3456bd;
+  font-weight:800;
+}
+.profile strong { display:block; font-size:13px; }
+.profile small { color:var(--muted); font-size:11px; }
+
+.content { padding:30px; max-width:1600px; margin:auto; }
+.heading {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+  margin-bottom:25px;
+}
+.eyebrow {
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:1.4px;
+  color:var(--teal);
+  margin-bottom:8px;
+}
+h1 { font-size:28px; letter-spacing:-.7px; }
+h2 { font-size:16px; }
+.subtitle { color:var(--muted); margin-top:8px; }
+.primary {
+  border:0;
+  background:var(--blue);
+  color:white;
+  padding:11px 16px;
+  border-radius:9px;
+  font-weight:750;
+  box-shadow:0 4px 10px #4169e122;
+}
+.primary:hover { background:#3154c8; transform:translateY(-1px); }
+.primary:disabled { opacity:.65; cursor:wait; transform:none; }
+
+.stats {
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:15px;
+  margin-bottom:22px;
+}
+.stat,.panel {
+  background:white;
+  border:1px solid var(--border);
+  border-radius:14px;
+  box-shadow:0 5px 20px #20304a07;
+}
+.stat {
+  padding:20px;
+  position:relative;
+  overflow:hidden;
+}
+.stat:after {
+  content:"";
+  position:absolute;
+  width:75px;
+  height:75px;
+  border-radius:50%;
+  background:var(--tint,#edf1ff);
+  right:-28px;
+  top:-28px;
+}
+.stat-top {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+  position:relative;
+  z-index:1;
+}
+.stat-name { font-size:12px; color:var(--muted); }
+.stat-icon {
+  width:35px;
+  height:35px;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  background:var(--tint,#edf1ff);
+  color:var(--accent,var(--blue));
+  font-size:17px;
+}
+.stat-number { font-size:30px; font-weight:800; margin:12px 0 4px; }
+.stat-foot { color:var(--muted); font-size:11px; }
+
+.panel { padding:22px; margin-bottom:20px; }
+.panel-heading {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:18px;
+}
+.muted { color:var(--muted); font-size:12px; }
+.toolbar { display:flex; flex-wrap:wrap; gap:9px; margin-bottom:16px; }
+.toolbar input,.toolbar select {
+  border:1px solid var(--border);
+  background:white;
+  border-radius:8px;
+  padding:10px 12px;
+  color:var(--text);
+}
+.toolbar input { flex:1; min-width:180px; }
+.toolbar select { min-width:140px; }
+.secondary {
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:10px 12px;
+  background:white;
+  color:var(--text);
+}
+.table-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; text-align:left; white-space:nowrap; }
+th {
+  padding:13px 12px;
+  background:#f8f9fc;
+  color:var(--muted);
+  font-size:10px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
+td { padding:15px 12px; border-bottom:1px solid #edf0f5; font-size:12px; }
+tbody tr:hover { background:#fafbfe; }
+.company { font-weight:750; font-size:13px; }
+.role { color:var(--muted); margin-top:3px; font-size:11px; }
+.status {
+  display:inline-block;
+  border-radius:20px;
+  padding:6px 10px;
+  font-size:10px;
+  font-weight:800;
+}
+.status.applied { color:#3159bc; background:#eaf0ff; }
+.status.interview { color:#8c5b00; background:#fff3d7; }
+.status.offer { color:#18794e; background:#e2f7eb; }
+.status.rejected { color:#b42318; background:#ffebe9; }
+.status.saved { color:#6d4bb3; background:#f0eaff; }
+.actions { display:flex; gap:5px; flex-wrap:wrap; }
+.small-btn {
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:white;
+  padding:6px 8px;
+  color:var(--text);
+  font-size:11px;
+}
+.small-btn:hover { background:#edf1ff; }
+.empty { text-align:center; padding:38px 12px; color:var(--muted); }
+.empty-icon { font-size:30px; margin-bottom:8px; }
+.empty strong { display:block; color:var(--text); margin-bottom:6px; }
+
+.lower-grid {
+  display:grid;
+  grid-template-columns:1.1fr 1fr;
+  gap:20px;
+}
+.progress-row { margin:18px 0; }
+.progress-label {
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+  margin-bottom:8px;
+}
+.track {
+  height:8px;
+  border-radius:20px;
+  background:#edf0f5;
+  overflow:hidden;
+}
+.fill {
+  height:100%;
+  width:0;
+  border-radius:20px;
+  background:linear-gradient(90deg,#4169e1,#7896ff);
+  transition:width .4s ease;
+}
+.tips {
+  background:linear-gradient(135deg,#edf4ff,#e8fbf6);
+  padding:16px;
+  border-radius:10px;
+  margin-top:15px;
+}
+.tips p { font-size:12px; color:var(--muted); line-height:1.7; margin-top:7px; }
+.quick-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:13px; }
+.quick {
+  border:1px solid var(--border);
+  background:white;
+  border-radius:9px;
+  padding:12px;
+  text-align:left;
+}
+.quick:hover { background:#f8faff; border-color:#bdcaff; }
+.quick strong { display:block; font-size:12px; }
+.quick small { color:var(--muted); }
+
+.modal-backdrop {
+  position:fixed;
+  inset:0;
+  background:#101c32a6;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  z-index:10;
+  backdrop-filter:blur(3px);
+}
+.modal-backdrop.show { display:flex; }
+.modal {
+  width:100%;
+  max-width:570px;
+  background:white;
+  border-radius:15px;
+  padding:24px;
+  max-height:90vh;
+  overflow-y:auto;
+  box-shadow:0 25px 80px #0003;
+}
+.modal-head { display:flex; justify-content:space-between; margin-bottom:20px; }
+.close-btn { border:0; background:transparent; font-size:25px; color:var(--muted); }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.field { display:flex; flex-direction:column; gap:6px; }
+.field.full { grid-column:1/-1; }
+.field label { font-size:11px; font-weight:750; }
+.field input,.field select,.field textarea {
+  width:100%;
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:10px;
+  background:white;
+  color:var(--text);
+}
+.field textarea { min-height:75px; resize:vertical; }
+.modal-footer { display:flex; justify-content:flex-end; gap:9px; margin-top:20px; }
+
+.toast {
+  position:fixed;
+  bottom:22px;
+  right:22px;
+  background:#173b2b;
+  color:white;
+  padding:12px 17px;
+  border-radius:9px;
+  display:none;
+  z-index:20;
+  box-shadow:0 8px 25px #0002;
+  max-width:min(500px,calc(100vw - 44px));
+}
+.toast.show { display:block; }
+.section-note {
+  padding:16px;
+  border:1px dashed #d5deec;
+  border-radius:10px;
+  color:var(--muted);
+  background:#fbfcff;
+  line-height:1.8;
+}
+.reminder-summary {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;
+  margin-bottom:18px;
+}
+.reminder-count {
+  background:white;
+  border:1px solid var(--border);
+  border-radius:11px;
+  padding:15px;
+}
+.reminder-count strong { display:block; font-size:24px; margin-bottom:5px; }
+.reminder-count span { color:var(--muted); font-size:12px; }
+.reminder-group { margin-top:20px; }
+.reminder-group h3 {
+  font-size:14px;
+  margin-bottom:11px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.reminder-list { display:grid; gap:10px; }
+.reminder-card {
+  background:white;
+  border:1px solid var(--border);
+  border-radius:11px;
+  padding:15px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+}
+.reminder-card.overdue { border-left:4px solid #d92d20; }
+.reminder-card.today { border-left:4px solid #d99000; }
+.reminder-card.upcoming { border-left:4px solid #4169e1; }
+.reminder-card.completed { border-left:4px solid #168052; opacity:.82; }
+.reminder-info { min-width:0; }
+.reminder-info h4 { font-size:14px; margin-bottom:5px; overflow-wrap:anywhere; }
+.reminder-info p { color:var(--muted); font-size:12px; line-height:1.7; overflow-wrap:anywhere; }
+.reminder-date { font-weight:750; }
+.reminder-actions { display:flex; flex-wrap:wrap; gap:7px; flex-shrink:0; }
+.done-btn { background:#e2f7eb; border-color:#b8e6cb; color:#18794e; }
+.reopen-btn { background:#edf1ff; border-color:#cbd6ff; color:#3159bc; }
+
+/* Analytics dashboard */
+.analytics-stats {
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  margin-bottom:20px;
+}
+.analytics-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+.chart-row {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:18px 0;
+}
+.chart-label {
+  width:82px;
+  flex-shrink:0;
+  font-size:12px;
+  overflow-wrap:anywhere;
+}
+.chart-track {
+  flex:1;
+  min-width:0;
+  height:13px;
+  background:#edf0f5;
+  border-radius:20px;
+  overflow:hidden;
+}
+.chart-fill {
+  height:100%;
+  width:0;
+  border-radius:20px;
+  background:linear-gradient(90deg,#4169e1,#7896ff);
+}
+.chart-value {
+  width:30px;
+  text-align:right;
+  font-weight:750;
+  font-size:12px;
+}
+.month-chart {
+  height:210px;
+  display:flex;
+  align-items:stretch;
+  justify-content:space-around;
+  gap:8px;
+  padding:10px 5px 0;
+}
+.month-column {
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:7px;
+}
+.month-value { font-size:11px; font-weight:750; }
+.month-bar-area {
+  flex:1;
+  width:100%;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  min-height:0;
+  border-bottom:1px solid var(--border);
+}
+.month-bar {
+  width:min(34px,75%);
+  min-height:0;
+  background:linear-gradient(180deg,#12a594,#4169e1);
+  border-radius:6px 6px 0 0;
+}
+.month-label { font-size:10px; color:var(--muted); white-space:nowrap; }
+.analytics-empty {
+  color:var(--muted);
+  text-align:center;
+  padding:25px 10px;
+  line-height:1.7;
+}
+.metric-note {
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.7;
+  margin-top:10px;
+}
+
+/* Resume Analyzer */
+.resume-layout {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+}
+.resume-card {
+  background:white;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:20px;
+  margin-bottom:18px;
+  min-width:0;
+  box-shadow:0 5px 20px #20304a07;
+}
+.resume-card h3 {
+  font-size:15px;
+  margin-bottom:8px;
+}
+.resume-help {
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.7;
+  margin-bottom:15px;
+}
+.resume-card input[type="file"],
+.resume-card textarea {
+  display:block;
+  width:100%;
+  border:1px solid var(--border);
+  border-radius:9px;
+  padding:12px;
+  background:white;
+  margin-top:8px;
+  margin-bottom:15px;
+}
+.resume-card textarea {
+  min-height:210px;
+  resize:vertical;
+  line-height:1.6;
+}
+.resume-card label {
+  font-size:12px;
+  font-weight:750;
+}
+.resume-score {
+  display:flex;
+  align-items:center;
+  gap:20px;
+  flex-wrap:wrap;
+  margin:18px 0;
+}
+.resume-score-circle {
+  width:110px;
+  height:110px;
+  border:8px solid #dce6ff;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  flex-shrink:0;
+}
+.resume-score-circle strong {
+  font-size:26px;
+  color:var(--blue);
+}
+.resume-skill-list {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:12px;
+  margin-bottom:18px;
+}
+.resume-skill {
+  display:inline-block;
+  padding:7px 10px;
+  border-radius:20px;
+  font-size:12px;
+  background:#e2f7eb;
+  color:#18794e;
+  overflow-wrap:anywhere;
+}
+.resume-skill.missing {
+  background:#ffebe9;
+  color:#b42318;
+}
+.resume-suggestions {
+  padding-left:20px;
+  line-height:1.8;
+  color:var(--muted);
+  font-size:13px;
+  overflow-wrap:anywhere;
+}
+.resume-status {
+  margin-top:12px;
+  font-size:13px;
+  line-height:1.7;
+  overflow-wrap:anywhere;
+}
+.resume-status.error { color:#b42318; }
+.resume-status.success { color:#18794e; }
+.resume-score-note {
+  background:#f5f7fb;
+  border-radius:9px;
+  padding:12px;
+  font-size:12px;
+  line-height:1.7;
+  color:var(--muted);
+  margin-top:15px;
+  overflow-wrap:anywhere;
+}
+.resume-result-section { margin-top:22px; }
+.resume-result-section h3 { margin-bottom:8px; }
+.resume-loading {
+  padding:20px 10px;
+  color:var(--muted);
+  line-height:1.8;
+}
+.resume-empty {
+  padding:16px;
+  border:1px dashed #d5deec;
+  border-radius:10px;
+  background:#fbfcff;
+  color:var(--muted);
+  line-height:1.8;
+}
+
+@media(max-width:1250px) {
+  .stats { grid-template-columns:repeat(3,minmax(0,1fr)); }
+}
+@media(max-width:1050px) {
+  .sidebar { width:205px; }
+  .content { padding:23px 18px; }
+  .topbar { padding:14px 18px; }
+  .stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .analytics-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .reminder-summary { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media(max-width:850px) {
+  .resume-layout { grid-template-columns:1fr; }
+}
+@media(max-width:700px) {
+  .app { display:block; }
+  .sidebar { width:100%; padding:14px; }
+  .brand { margin:0 5px 15px; }
+  .nav { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .nav-label,.sidebar-bottom { display:none; }
+  .topbar { padding:12px; }
+  .profile div:last-child { display:none; }
+  .content { padding:20px 12px; }
+  .heading { align-items:flex-start; flex-direction:column; }
+  h1 { font-size:24px; }
+  .stats { gap:9px; }
+  .stat { padding:14px; }
+  .stat-number { font-size:25px; }
+  .lower-grid,.analytics-grid { grid-template-columns:1fr; }
+  .panel { padding:14px; }
+  .form-grid { grid-template-columns:1fr; }
+  .field.full { grid-column:auto; }
+  .reminder-card { align-items:flex-start; flex-direction:column; }
+  .reminder-actions { width:100%; }
+  .reminder-summary { gap:8px; }
+  .reminder-count { padding:12px; }
+  .month-chart { gap:3px; }
+  .month-label { font-size:9px; }
+  .resume-card { padding:15px; }
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-icon">✦</span>
+      <span>Smart<em>Job</em></span>
+    </div>
+
+    <div class="nav-label">WORKSPACE</div>
+
+    <nav class="nav">
+      <button class="active" data-page="Dashboard"><span class="nav-icon">▦</span>Dashboard</button>
+      <button data-page="My Applications"><span class="nav-icon">▤</span>My Applications</button>
+      <button data-page="Tasks & Reminders"><span class="nav-icon">◷</span>Tasks & Reminders</button>
+      <button data-page="Resume Analyzer"><span class="nav-icon">▧</span>Resume Analyzer</button>
+      <button data-page="Interview Practice"><span class="nav-icon">✧</span>Interview Practice</button>
+      <button data-page="Analytics"><span class="nav-icon">▥</span>Analytics</button>
+      <button data-page="Career Roadmap"><span class="nav-icon">➜</span>Career Roadmap</button>
+    </nav>
+
+    <div class="sidebar-bottom">
+      Your career, organised.<br>
+      Small steps. Better opportunities.
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="search-wrap">
+        <span>⌕</span>
+        <input id="globalSearch" type="search" placeholder="Search companies, roles...">
+      </div>
+
+      <div class="profile">
+        <div class="avatar">SJ</div>
+        <div><strong>My Workspace</strong><small>Job seeker</small></div>
+      </div>
+    </header>
+
+    <div class="content">
+      <section class="heading">
+        <div>
+          <div class="eyebrow">YOUR CAREER COMMAND CENTRE</div>
+          <h1 id="pageTitle">Good to see you again 👋</h1>
+          <p class="subtitle" id="pageSubtitle">One organised place for every opportunity.</p>
+        </div>
+        <button class="primary" id="addBtn">＋ Add application</button>
+      </section>
+
+      <!-- Dashboard cards -->
+      <section class="stats" id="mainStats">
+        <article class="stat" style="--tint:#edf1ff;--accent:#4169e1">
+          <div class="stat-top"><span class="stat-name">Total applications</span><span class="stat-icon">▤</span></div>
+          <div class="stat-number" id="totalCount">0</div>
+          <div class="stat-foot">Your tracked opportunities</div>
+        </article>
+
+        <article class="stat" style="--tint:#fff3d7;--accent:#c18416">
+          <div class="stat-top"><span class="stat-name">Interviews</span><span class="stat-icon">◷</span></div>
+          <div class="stat-number" id="interviewCount">0</div>
+          <div class="stat-foot">Interview-stage applications</div>
+        </article>
+
+        <article class="stat" style="--tint:#e2f7eb;--accent:#168052">
+          <div class="stat-top"><span class="stat-name">Offers received</span><span class="stat-icon">✧</span></div>
+          <div class="stat-number" id="offerCount">0</div>
+          <div class="stat-foot">Potential next steps</div>
+        </article>
+
+        <article class="stat" style="--tint:#ffebe9;--accent:#b42318">
+          <div class="stat-top"><span class="stat-name">Rejections</span><span class="stat-icon">↗</span></div>
+          <div class="stat-number" id="rejectedCount">0</div>
+          <div class="stat-foot">Outcomes to learn from</div>
+        </article>
+
+        <article class="stat" style="--tint:#e8fbf6;--accent:#0d9488">
+          <div class="stat-top"><span class="stat-name">Open reminders</span><span class="stat-icon">◷</span></div>
+          <div class="stat-number" id="reminderCount">0</div>
+          <div class="stat-foot">Pending follow-up tasks</div>
+        </article>
+      </section>
+
+      <!-- Applications table -->
+      <section class="panel" id="applicationsPanel">
+        <div class="panel-heading">
+          <div>
+            <h2 id="tableTitle">Your applications</h2>
+            <p class="muted" style="margin-top:5px">Keep every opportunity moving forward.</p>
+          </div>
+          <span class="muted" id="recordCount">0 records</span>
+        </div>
+
+        <div class="toolbar">
+          <input id="tableSearch" type="search" placeholder="Search company or job title">
+
+          <select id="statusFilter">
+            <option value="">All statuses</option>
+            <option>Applied</option>
+            <option>Interview</option>
+            <option>Offer</option>
+            <option>Rejected</option>
+            <option>Saved</option>
+          </select>
+
+          <select id="sortBy">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="company">Company A–Z</option>
+          </select>
+
+          <button class="secondary" id="exportBtn">Export CSV</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Company / Role</th>
+                <th>Location</th>
+                <th>Applied date</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="applicationsBody"></tbody>
+          </table>
+        </div>
+
+        <div class="empty" id="emptyState">
+          <div class="empty-icon">✦</div>
+          <strong>Your next opportunity starts here</strong>
+          Add your first application to start building your career pipeline.
+          <div style="margin-top:15px">
+            <button class="primary" id="emptyAddBtn">＋ Add your first application</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dashboard lower panels -->
+      <div class="lower-grid" id="lowerGrid">
+        <section class="panel">
+          <div class="panel-heading"><h2>Application pipeline</h2><span class="muted">Live overview</span></div>
+
+          <div class="progress-row">
+            <div class="progress-label"><span>Applied</span><strong id="appliedProgressText">0</strong></div>
+            <div class="track"><div class="fill" id="appliedProgress"></div></div>
+          </div>
+
+          <div class="progress-row">
+            <div class="progress-label"><span>Interview</span><strong id="interviewProgressText">0</strong></div>
+            <div class="track"><div class="fill" id="interviewProgress" style="background:#e6a23c"></div></div>
+          </div>
+
+          <div class="progress-row">
+            <div class="progress-label"><span>Offer</span><strong id="offerProgressText">0</strong></div>
+            <div class="track"><div class="fill" id="offerProgress" style="background:#23a26d"></div></div>
+          </div>
+
+          <div class="progress-row">
+            <div class="progress-label"><span>Rejected</span><strong id="rejectedProgressText">0</strong></div>
+            <div class="track"><div class="fill" id="rejectedProgress" style="background:#df5c58"></div></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading"><h2>Your next step</h2><span class="stat-icon">✧</span></div>
+
+          <p class="muted" style="line-height:1.8">
+            A consistent job search is easier to manage when every application has a next step.
+          </p>
+
+          <div class="tips">
+            <strong>💡 Build your momentum</strong>
+            <p>Add a job, keep its status updated, and record interview dates or follow-up notes. Your dashboard will show useful patterns.</p>
+          </div>
+
+          <div class="quick-grid">
+            <button class="quick" id="quickFollow"><strong>◷ Follow-up notes</strong><small>View your next steps</small></button>
+            <button class="quick" id="quickExport"><strong>⇩ Export your data</strong><small>Download a backup</small></button>
+          </div>
+        </section>
+      </div>
+
+      <!-- Other pages and Analytics -->
+      <section class="panel" id="sectionPanel" hidden>
+        <div class="panel-heading">
+          <h2 id="sectionTitle">Section</h2>
+          <span class="muted">Smart Job Tracker</span>
+        </div>
+
+        <div id="sectionContent" class="section-note"></div>
+
+        <div id="analyticsDashboard" hidden>
+          <div class="stats analytics-stats">
+            <article class="stat" style="--tint:#edf1ff;--accent:#4169e1">
+              <div class="stat-name">Total Applications</div>
+              <div class="stat-number" id="analyticsTotal">0</div>
+              <div class="stat-foot">All tracked applications</div>
+            </article>
+
+            <article class="stat" style="--tint:#fff3d7;--accent:#c18416">
+              <div class="stat-name">Interviews</div>
+              <div class="stat-number" id="analyticsInterviews">0</div>
+              <div class="stat-foot">Interview-stage applications</div>
+            </article>
+
+            <article class="stat" style="--tint:#e2f7eb;--accent:#168052">
+              <div class="stat-name">Offers</div>
+              <div class="stat-number" id="analyticsOffers">0</div>
+              <div class="stat-foot">Offers received</div>
+            </article>
+
+            <article class="stat" style="--tint:#e8fbf6;--accent:#0d9488">
+              <div class="stat-name">Interview Conversion</div>
+              <div class="stat-number" id="analyticsConversion">0%</div>
+              <div class="stat-foot">Interviews / total applications</div>
+            </article>
+          </div>
+
+          <div class="analytics-grid">
+            <section class="panel">
+              <div class="panel-heading"><h2>Application Status Analysis</h2></div>
+              <div id="statusChart"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-heading"><h2>Monthly Application Trend</h2></div>
+              <div id="monthlyChart"></div>
+              <p class="metric-note">Shows applications by applied date for the last six months.</p>
+            </section>
+          </div>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <h2>Application Funnel</h2>
+              <span class="muted">Current status breakdown</span>
+            </div>
+
+            <div id="funnelAnalysis"></div>
+
+            <p class="metric-note">
+              Interview conversion here means interview-stage applications divided by total tracked applications.
+              It is a simple tracking metric, not a final hiring success rate.
+            </p>
+          </section>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- Add / Edit modal -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-head">
+      <div>
+        <h2 id="modalTitle">Add application</h2>
+        <p class="muted" style="margin-top:5px">Save the details of this opportunity.</p>
+      </div>
+      <button class="close-btn" id="closeModal" aria-label="Close">×</button>
+    </div>
+
+    <form id="applicationForm">
+      <input type="hidden" id="editId">
+
+      <div class="form-grid">
+        <div class="field">
+          <label for="company">Company name *</label>
+          <input id="company" required maxlength="100" placeholder="e.g. Google">
+        </div>
+
+        <div class="field">
+          <label for="role">Job title *</label>
+          <input id="role" required maxlength="100" placeholder="e.g. Data Analyst">
+        </div>
+
+        <div class="field">
+          <label for="location">Location</label>
+          <input id="location" placeholder="e.g. Remote / Delhi">
+        </div>
+
+        <div class="field">
+          <label for="appliedDate">Applied date</label>
+          <input id="appliedDate" type="date">
+        </div>
+
+        <div class="field">
+          <label for="status">Application status</label>
+          <select id="status">
+            <option>Applied</option>
+            <option>Interview</option>
+            <option>Offer</option>
+            <option>Rejected</option>
+            <option>Saved</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="jobUrl">Job posting URL</label>
+          <input id="jobUrl" type="url" placeholder="https://...">
+        </div>
+
+        <div class="field">
+          <label for="followUpDate">Follow-up date</label>
+          <input id="followUpDate" type="date">
+        </div>
+
+        <div class="field">
+          <label for="jobType">Job type</label>
+          <select id="jobType">
+            <option value="">Choose type</option>
+            <option>Full-time</option>
+            <option>Part-time</option>
+            <option>Internship</option>
+            <option>Contract</option>
+            <option>Remote</option>
+          </select>
+        </div>
+
+        <div class="field full">
+          <label for="notes">Notes / next steps</label>
+          <textarea id="notes" placeholder="Recruiter details, follow-up notes, interview notes..."></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="secondary" type="button" id="cancelModal">Cancel</button>
+        <button class="primary" type="submit">Save application</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+
+  // Existing application database API.
+  const API = "http://127.0.0.1:8000/api/applications";
+
+  // Resume Analyzer API.
+  const RESUME_API = "http://127.0.0.1:8000/api/resume/analyze";
+
+  const storageKey = "smartJobTrackerApplicationsV1";
+
+  let applications = [];
+  let toastTimer;
+  let loading = false;
+  let currentPage = "Dashboard";
+  let reminderActionBusy = false;
+
+  async function apiRequest(url, options = {}) {
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      }
+    });
+
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(result.detail || `Request failed: ${response.status}`);
+    }
+
+    return result;
+  }
+
+  function notify(message) {
+    $("toast").textContent = message;
+    $("toast").classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => $("toast").classList.remove("show"), 3500);
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#39;"
+    })[char]);
+  }
+
+  function todayISO() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  function formatDate(value) {
+    if (!value) return "No date";
+
+    const parts = String(value).slice(0, 10).split("-");
+
+    if (parts.length !== 3) return value;
+
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+
+  function openModal(app) {
+    $("applicationForm").reset();
+
+    $("editId").value = app?.id ?? "";
+    $("modalTitle").textContent = app ? "Edit application" : "Add application";
+    $("company").value = app?.company || "";
+    $("role").value = app?.role || "";
+    $("location").value = app?.location || "";
+    $("appliedDate").value = app?.appliedDate
+      ? String(app.appliedDate).slice(0, 10)
+      : todayISO();
+    $("status").value = app?.status || "Applied";
+    $("jobUrl").value = app?.jobUrl || "";
+    $("notes").value = app?.notes || "";
+    $("followUpDate").value = app?.followUpDate
+      ? String(app.followUpDate).slice(0, 10)
+      : "";
+    $("jobType").value = app?.jobType || "";
+
+    $("modalBackdrop").classList.add("show");
+    setTimeout(() => $("company").focus(), 40);
+  }
+
+  function closeModal() {
+    $("modalBackdrop").classList.remove("show");
+  }
+
+  function setProgress(id, count, total) {
+    $(id + "ProgressText").textContent = count;
+    $(id + "Progress").style.width =
+      (total ? count / total * 100 : 0) + "%";
+  }
+
+  function countStatus(status) {
+    return applications.filter(app => app.status === status).length;
+  }
+
+  function renderStats() {
+    $("totalCount").textContent = applications.length;
+    $("interviewCount").textContent = countStatus("Interview");
+    $("offerCount").textContent = countStatus("Offer");
+    $("rejectedCount").textContent = countStatus("Rejected");
+
+    const openReminders = applications.filter(app =>
+      app.followUpDate && !Boolean(app.followUpDone)
+    ).length;
+
+    $("reminderCount").textContent = openReminders;
+
+    setProgress("applied", countStatus("Applied"), applications.length);
+    setProgress("interview", countStatus("Interview"), applications.length);
+    setProgress("offer", countStatus("Offer"), applications.length);
+    setProgress("rejected", countStatus("Rejected"), applications.length);
+  }
+
+  function renderTable() {
+    const query = (
+      $("tableSearch").value + " " + $("globalSearch").value
+    ).trim().toLowerCase();
+
+    const filter = $("statusFilter").value;
+
+    let rows = applications.filter(app => {
+      const searchable = [
+        app.company,
+        app.role,
+        app.location,
+        app.notes,
+        app.jobType
+      ].join(" ").toLowerCase();
+
+      return searchable.includes(query) &&
+        (!filter || app.status === filter);
+    });
+
+    if ($("sortBy").value === "newest") {
+      rows.sort((a, b) =>
+        String(b.appliedDate || "").localeCompare(String(a.appliedDate || ""))
+      );
+    } else if ($("sortBy").value === "oldest") {
+      rows.sort((a, b) =>
+        String(a.appliedDate || "").localeCompare(String(b.appliedDate || ""))
+      );
+    } else if ($("sortBy").value === "company") {
+      rows.sort((a, b) =>
+        (a.company || "").localeCompare(b.company || "")
+      );
+    }
+
+    $("recordCount").textContent =
+      `${rows.length} ${rows.length === 1 ? "record" : "records"}`;
+
+    $("emptyState").style.display = rows.length ? "none" : "block";
+
+    $("applicationsBody").innerHTML = rows.map(app => {
+      const statusClass = ({
+        Applied:"applied",
+        Interview:"interview",
+        Offer:"offer",
+        Rejected:"rejected",
+        Saved:"saved"
+      })[app.status] || "applied";
+
+      return `
+        <tr>
+          <td>
+            <div class="company">${escapeHtml(app.company)}</div>
+            <div class="role">${escapeHtml(app.role)}${app.jobType ? " · " + escapeHtml(app.jobType) : ""}</div>
+          </td>
+          <td>${escapeHtml(app.location || "—")}</td>
+          <td>${escapeHtml(app.appliedDate ? formatDate(app.appliedDate) : "—")}</td>
+          <td><span class="status ${statusClass}">${escapeHtml(app.status)}</span></td>
+          <td>
+            <div class="actions">
+              <button class="small-btn" data-edit="${escapeHtml(app.id)}">Edit</button>
+              <button class="small-btn" data-delete="${escapeHtml(app.id)}">Delete</button>
+              ${app.jobUrl ? `<button class="small-btn" data-open="${escapeHtml(app.id)}">Job ↗</button>` : ""}
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  // Analytics calculated from the applications loaded from the API.
+  function renderAnalytics() {
+    const total = applications.length;
+    const interviews = countStatus("Interview");
+    const offers = countStatus("Offer");
+    const rejected = countStatus("Rejected");
+
+    $("analyticsTotal").textContent = total;
+    $("analyticsInterviews").textContent = interviews;
+    $("analyticsOffers").textContent = offers;
+
+    const conversion = total ? interviews / total * 100 : 0;
+    $("analyticsConversion").textContent = conversion.toFixed(1) + "%";
+
+    if (!total) {
+      $("statusChart").innerHTML =
+        '<div class="analytics-empty">Applications add hone par status analysis yahan dikhega.</div>';
+
+      $("monthlyChart").innerHTML =
+        '<div class="analytics-empty">Monthly trend dikhane ke liye application dates add karein.</div>';
+
+      $("funnelAnalysis").innerHTML =
+        '<div class="analytics-empty">Application data abhi available nahi hai.</div>';
+
+      return;
+    }
+
+    const statuses = [
+      { name:"Applied", value:countStatus("Applied") },
+      { name:"Interview", value:interviews },
+      { name:"Offer", value:offers },
+      { name:"Rejected", value:rejected },
+      { name:"Saved", value:countStatus("Saved") }
+    ];
+
+    $("statusChart").innerHTML = statuses.map(item => {
+      const percentage = item.value / total * 100;
+
+      return `
+        <div class="chart-row">
+          <div class="chart-label">${item.name}</div>
+          <div class="chart-track">
+            <div class="chart-fill" style="width:${percentage}%"></div>
+          </div>
+          <div class="chart-value">${item.value}</div>
+        </div>
+      `;
+    }).join("");
+
+    const now = new Date();
+    const months = [];
+
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+
+      const key =
+        date.getFullYear() + "-" +
+        String(date.getMonth() + 1).padStart(2, "0");
+
+      months.push({
+        key,
+        label: date.toLocaleDateString("en-IN", { month:"short" }),
+        value: applications.filter(app =>
+          String(app.appliedDate || "").slice(0, 7) === key
+        ).length
+      });
+    }
+
+    const maxMonthly = Math.max(1, ...months.map(month => month.value));
+
+    $("monthlyChart").innerHTML = `
+      <div class="month-chart">
+        ${months.map(month => {
+          const height = month.value
+            ? Math.max(5, month.value / maxMonthly * 100)
+            : 0;
+
+          return `
+            <div class="month-column">
+              <div class="month-value">${month.value}</div>
+              <div class="month-bar-area">
+                <div
+                  class="month-bar"
+                  title="${month.label}: ${month.value} applications"
+                  style="height:${height}%"
+                ></div>
+              </div>
+              <div class="month-label">${month.label}</div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    `;
+
+    const funnel = [
+      { label:"Total applications", value:total },
+      { label:"Interviews", value:interviews },
+      { label:"Offers", value:offers }
+    ];
+
+    $("funnelAnalysis").innerHTML = funnel.map(item => {
+      const percentage = item.value / total * 100;
+
+      return `
+        <div class="progress-row">
+          <div class="progress-label">
+            <span>${item.label}</span>
+            <strong>${item.value} (${percentage.toFixed(1)}%)</strong>
+          </div>
+          <div class="track">
+            <div class="fill" style="width:${percentage}%"></div>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function render() {
+    renderStats();
+    renderTable();
+
+    if (currentPage === "Tasks & Reminders") {
+      renderTasks();
+    }
+
+    if (currentPage === "Analytics") {
+      renderAnalytics();
+    }
+  }
+
+  async function loadApplications() {
+    if (loading) return;
+    loading = true;
+
+    try {
+      applications = await apiRequest(API);
+
+      // Import old browser records only if the database is empty.
+      if (applications.length === 0) {
+        let oldRecords = [];
+
+        try {
+          oldRecords = JSON.parse(localStorage.getItem(storageKey) || "[]");
+        } catch {
+          oldRecords = [];
+        }
+
+        if (Array.isArray(oldRecords) && oldRecords.length) {
+          let imported = 0;
+
+          for (const old of oldRecords) {
+            if (!old.company || !old.role) continue;
+
+            const payload = {
+              company:old.company,
+              role:old.role,
+              location:old.location || "",
+              appliedDate:old.appliedDate || null,
+              status:old.status || "Applied",
+              jobType:old.jobType || "",
+              jobUrl:old.jobUrl || "",
+              notes:old.notes || "",
+              followUpDate:old.followUpDate || null,
+              followUpDone:Boolean(old.followUpDone)
+            };
+
+            try {
+              await apiRequest(API, {
+                method:"POST",
+                body:JSON.stringify(payload)
+              });
+              imported++;
+            } catch (error) {
+              console.error("Import failed:", error);
+            }
+          }
+
+          applications = await apiRequest(API);
+
+          if (imported) {
+            notify(`${imported} old application(s) imported to database.`);
+          }
+        }
+      }
+
+      render();
+    } catch (error) {
+      console.error(error);
+      notify("Database se data load nahi hua: " + error.message);
+    } finally {
+      loading = false;
+    }
+  }
+
+  function renderTasks() {
+    const today = todayISO();
+
+    const dated = applications
+      .filter(app => app.followUpDate)
+      .slice()
+      .sort((a, b) =>
+        String(a.followUpDate).localeCompare(String(b.followUpDate))
+      );
+
+    const pending = dated.filter(app => !Boolean(app.followUpDone));
+    const overdue = pending.filter(app => String(app.followUpDate).slice(0, 10) < today);
+    const dueToday = pending.filter(app => String(app.followUpDate).slice(0, 10) === today);
+    const upcoming = pending.filter(app => String(app.followUpDate).slice(0, 10) > today);
+    const completed = dated.filter(app => Boolean(app.followUpDone));
+
+    const card = (app, type) => {
+      const isDone = Boolean(app.followUpDone);
+      const description = app.notes || "No notes added.";
+
+      return `
+        <article class="reminder-card ${type}">
+          <div class="reminder-info">
+            <h4>${escapeHtml(app.company)} — ${escapeHtml(app.role)}</h4>
+            <p><span class="reminder-date">Follow-up: ${escapeHtml(formatDate(app.followUpDate))}</span></p>
+            <p>${escapeHtml(description)}</p>
+            <p>Application status: ${escapeHtml(app.status || "Applied")}</p>
+          </div>
+
+          <div class="reminder-actions">
+            ${isDone
+              ? `<button class="small-btn reopen-btn" data-reminder-action="reopen" data-id="${escapeHtml(app.id)}">↶ Reopen</button>`
+              : `<button class="small-btn done-btn" data-reminder-action="done" data-id="${escapeHtml(app.id)}">✓ Mark as Done</button>`}
+            <button class="small-btn" data-reminder-edit="${escapeHtml(app.id)}">Edit</button>
+          </div>
+        </article>
+      `;
+    };
+
+    const group = (title, icon, items, type, emptyText) => `
+      <section class="reminder-group">
+        <h3>${icon} ${title} <span class="muted">(${items.length})</span></h3>
+        ${items.length
+          ? `<div class="reminder-list">${items.map(app => card(app, type)).join("")}</div>`
+          : `<div class="reminder-empty">${emptyText}</div>`}
+      </section>
+    `;
+
+    $("sectionContent").className = "";
+    $("sectionContent").innerHTML = `
+      <div class="reminder-summary">
+        <div class="reminder-count"><strong>${overdue.length}</strong><span>Overdue</span></div>
+        <div class="reminder-count"><strong>${dueToday.length}</strong><span>Due today</span></div>
+        <div class="reminder-count"><strong>${upcoming.length}</strong><span>Upcoming</span></div>
+        <div class="reminder-count"><strong>${completed.length}</strong><span>Completed</span></div>
+      </div>
+
+      ${group("Overdue", "🔴", overdue, "overdue", "No overdue reminders. Great work!")}
+      ${group("Due Today", "🟠", dueToday, "today", "Aaj ke liye koi pending reminder nahi hai.")}
+      ${group("Upcoming", "🔵", upcoming, "upcoming", "Koi upcoming reminder nahi hai. Application edit karke follow-up date add kar sakte hain.")}
+      ${group("Completed", "🟢", completed, "completed", "Abhi koi reminder complete nahi kiya gaya hai.")}
+    `;
+  }
+
+  // Resume Analyzer form.
+  function renderResumeAnalyzer() {
+    $("sectionContent").className = "";
+    $("sectionContent").innerHTML = `
+      <div class="resume-layout">
+        <section class="resume-card">
+          <h3>📄 Upload Your Resume</h3>
+          <p class="resume-help">
+            Apna PDF, DOCX ya TXT resume upload karein.
+            Maximum file size 5 MB hai.
+          </p>
+
+          <form id="resumeAnalyzerForm">
+            <label for="resumeFile">Resume file</label>
+            <input
+              id="resumeFile"
+              type="file"
+              accept=".pdf,.docx,.txt"
+              required
+            >
+
+            <label for="jobDescription">Job description</label>
+            <textarea
+              id="jobDescription"
+              placeholder="Yahan job description paste karein..."
+              required
+            ></textarea>
+
+            <button class="primary" id="analyzeResumeBtn" type="submit">
+              Analyze Resume
+            </button>
+
+            <p id="resumeAnalyzerStatus" class="resume-status" role="status"></p>
+          </form>
+        </section>
+
+        <section class="resume-card">
+          <h3>📊 Analysis Results</h3>
+          <p class="resume-help">
+            Resume analyze karne ke baad estimated skill-match score,
+            matched skills, missing skills aur suggestions yahan dikhenge.
+          </p>
+
+          <div id="resumeAnalyzerResults">
+            <div class="resume-empty">
+              Pehle resume upload karein aur job description paste karein.
+              Uske baad Analyze Resume par click karein.
+            </div>
+          </div>
+        </section>
+      </div>
+    `;
+  }
+
+  // Analyze resume without changing the existing applications API.
+  async function analyzeResume(event) {
+    if (event.target.id !== "resumeAnalyzerForm") return;
+
+    event.preventDefault();
+
+    const fileInput = $("resumeFile");
+    const jobDescription = $("jobDescription").value.trim();
+    const status = $("resumeAnalyzerStatus");
+    const results = $("resumeAnalyzerResults");
+    const button = $("analyzeResumeBtn");
+    const file = fileInput.files[0];
+
+    if (!file) {
+      status.className = "resume-status error";
+      status.textContent = "Pehle apna resume select karein.";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      status.className = "resume-status error";
+      status.textContent = "Resume file 5 MB se chhoti honi chahiye.";
+      return;
+    }
+
+    if (!/\.(pdf|docx|txt)$/i.test(file.name)) {
+      status.className = "resume-status error";
+      status.textContent = "Sirf PDF, DOCX ya TXT file upload karein.";
+      return;
+    }
+
+    if (!jobDescription) {
+      status.className = "resume-status error";
+      status.textContent = "Job description paste karna zaroori hai.";
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("resume", file);
+    formData.append("job_description", jobDescription);
+
+    button.disabled = true;
+    button.textContent = "Analyzing...";
+    status.className = "resume-status";
+    status.textContent = "Resume analyze ho raha hai...";
+    results.innerHTML = '<div class="resume-loading">Please wait, resume analyze ho raha hai...</div>';
+
+    try {
+      // Do not set Content-Type manually for FormData.
+      const response = await fetch(RESUME_API, {
+        method:"POST",
+        body:formData
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        const detail = typeof data.detail === "string"
+          ? data.detail
+          : "Resume analysis failed. Backend response check karein.";
+
+        throw new Error(detail);
+      }
+
+      const matchScore = Math.max(
+        0,
+        Math.min(100, Number(data.matchScore) || 0)
+      );
+
+      const matched = Array.isArray(data.matchedSkills)
+        ? data.matchedSkills
+        : [];
+
+      const missing = Array.isArray(data.missingSkills)
+        ? data.missingSkills
+        : [];
+
+      const suggestions = Array.isArray(data.suggestions)
+        ? data.suggestions
+        : [];
+
+      const skillHtml = (skills, isMissing = false) => {
+        if (!skills.length) {
+          return '<p class="muted">Koi skill identify nahi hui.</p>';
+        }
+
+        return `
+          <div class="resume-skill-list">
+            ${skills.map(skill => `
+              <span class="resume-skill ${isMissing ? "missing" : ""}">
+                ${escapeHtml(skill)}
+              </span>
+            `).join("")}
+          </div>
+        `;
+      };
+
+      const suggestionsHtml = suggestions.length
+        ? suggestions.map(item => `<li>${escapeHtml(item)}</li>`).join("")
+        : "<li>Job description ke relevant skills ko resume mein clearly mention karein.</li>";
+
+      results.innerHTML = `
+        <div class="resume-score">
+          <div class="resume-score-circle">
+            <strong>${matchScore}%</strong>
+          </div>
+
+          <div>
+            <h3>Estimated Skill Match</h3>
+            <p class="resume-help">
+              ${Number(data.matchedCount) || 0} of
+              ${Number(data.totalJobSkills) || 0}
+              identified job skills matched.
+            </p>
+          </div>
+        </div>
+
+        <div class="resume-result-section">
+          <h3>✅ Matched Skills</h3>
+          ${skillHtml(matched)}
+        </div>
+
+        <div class="resume-result-section">
+          <h3>📌 Missing Skills</h3>
+          ${skillHtml(missing, true)}
+        </div>
+
+        <div class="resume-result-section">
+          <h3>💡 Suggestions</h3>
+          <ul class="resume-suggestions">
+            ${suggestionsHtml}
+          </ul>
+        </div>
+
+        <div class="resume-score-note">
+          ${escapeHtml(data.scoreNote || "Yeh score resume aur job description mein text ke basis par estimate kiya gaya hai.")}
+        </div>
+      `;
+
+      status.className = "resume-status success";
+      status.textContent = "Analysis complete! Results neeche diye gaye hain.";
+    } catch (error) {
+      console.error("Resume analysis error:", error);
+
+      results.innerHTML = `
+        <div class="resume-empty">
+          Analysis abhi complete nahi ho paaya. Error message neeche diya gaya hai.
+        </div>
+      `;
+
+      status.className = "resume-status error";
+      status.textContent =
+        "Analysis nahi ho paaya: " +
+        (error.message || "Backend se connection nahi ho raha.");
+    } finally {
+      button.disabled = false;
+      button.textContent = "Analyze Resume";
+    }
+  }
+
+  function switchPage(page, button) {
+    currentPage = page;
+
+    document.querySelectorAll(".nav button").forEach(item => {
+      item.classList.toggle("active", item === button);
+    });
+
+    $("pageTitle").textContent =
+      page === "Dashboard" ? "Good to see you again 👋" : page;
+
+    const descriptions = {
+      "Dashboard":"One organised place for every opportunity.",
+      "My Applications":"Search, review and update your job applications.",
+      "Tasks & Reminders":"Keep track of your follow-up dates.",
+      "Resume Analyzer":"Prepare your resume for the roles you want.",
+      "Interview Practice":"Build confidence before your next interview.",
+      "Analytics":"See how your application pipeline is progressing.",
+      "Career Roadmap":"Plan the skills that move your career forward."
+    };
+
+    $("pageSubtitle").textContent = descriptions[page] || descriptions.Dashboard;
+
+    const isMainPage = page === "Dashboard" || page === "My Applications";
+    const isAnalytics = page === "Analytics";
+    const isOtherPage = !isMainPage && !isAnalytics;
+
+    $("mainStats").hidden = isOtherPage || isAnalytics;
+    $("applicationsPanel").hidden = !isMainPage;
+    $("lowerGrid").hidden = !isMainPage;
+    $("sectionPanel").hidden = isMainPage;
+    $("analyticsDashboard").hidden = !isAnalytics;
+    $("sectionContent").hidden = isAnalytics;
+    $("addBtn").hidden = page === "Tasks & Reminders";
+
+    $("tableTitle").textContent =
+      page === "My Applications" ? "All applications" : "Your applications";
+
+    if (isAnalytics) {
+      $("sectionTitle").textContent = "Analytics Dashboard";
+      renderAnalytics();
+    } else if (page === "Tasks & Reminders") {
+      $("sectionTitle").textContent = page;
+      renderTasks();
+    } else if (page === "Resume Analyzer") {
+      $("sectionTitle").textContent = page;
+      renderResumeAnalyzer();
+    } else if (isOtherPage) {
+      $("sectionTitle").textContent = page;
+
+      const messages = {
+        "Interview Practice":"Yahan role-specific interview questions aur preparation notes ka feature add karenge.",
+        "Career Roadmap":"Yahan skills, learning tasks aur weekly goals track karenge."
+      };
+
+      $("sectionContent").className = "section-note";
+      $("sectionContent").textContent =
+        messages[page] || "Is section ka feature agle step mein banayenge.";
+    }
+
+    if (page === "My Applications") {
+      $("tableSearch").focus();
+    }
+  }
+
+  function exportCsv() {
+    const headers = [
+      "Company","Role","Location","Applied Date","Status",
+      "Job Type","Job URL","Follow-up Date","Follow-up Done","Notes"
+    ];
+
+    const rows = applications.map(app => [
+      app.company,
+      app.role,
+      app.location,
+      app.appliedDate,
+      app.status,
+      app.jobType,
+      app.jobUrl,
+      app.followUpDate,
+      Boolean(app.followUpDone),
+      app.notes
+    ]);
+
+    const csv = [headers, ...rows].map(row =>
+      row.map(value =>
+        '"' + String(value ?? "").replace(/"/g, '""') + '"'
+      ).join(",")
+    ).join("\r\n");
+
+    const blob = new Blob(["\ufeff" + csv], {
+      type:"text/csv;charset=utf-8;"
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "smart-job-tracker-applications.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+
+    notify("CSV backup downloaded.");
+  }
+
+  async function setReminderDone(id, done) {
+    if (reminderActionBusy) return;
+
+    const app = applications.find(item => String(item.id) === String(id));
+
+    if (!app) {
+      notify("Application nahi mili. Data reload karke try karein.");
+      return;
+    }
+
+    reminderActionBusy = true;
+
+    try {
+      const payload = {
+        company:app.company,
+        role:app.role,
+        location:app.location || "",
+        appliedDate:app.appliedDate || null,
+        status:app.status || "Applied",
+        jobType:app.jobType || "",
+        jobUrl:app.jobUrl || "",
+        notes:app.notes || "",
+        followUpDate:app.followUpDate || null,
+        followUpDone:done,
+        interviewDate:app.interviewDate || null,
+        interviewTime:app.interviewTime || null,
+        interviewRound:app.interviewRound || "",
+        interviewMode:app.interviewMode || "",
+        interviewer:app.interviewer || "",
+        interviewNotes:app.interviewNotes || ""
+      };
+
+      await apiRequest(`${API}/${encodeURIComponent(app.id)}`, {
+        method:"PUT",
+        body:JSON.stringify(payload)
+      });
+
+      await loadApplications();
+
+      notify(done
+        ? "Reminder complete! Status database mein save ho gaya."
+        : "Reminder dobara pending kar diya gaya."
+      );
+    } catch (error) {
+      console.error(error);
+      notify("Reminder update nahi hua: " + error.message);
+    } finally {
+      reminderActionBusy = false;
+    }
+  }
+
+  $("addBtn").addEventListener("click", () => openModal());
+  $("emptyAddBtn").addEventListener("click", () => openModal());
+  $("closeModal").addEventListener("click", closeModal);
+  $("cancelModal").addEventListener("click", closeModal);
+
+  $("modalBackdrop").addEventListener("click", event => {
+    if (event.target === $("modalBackdrop")) closeModal();
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") closeModal();
+  });
+
+  document.querySelectorAll(".nav button").forEach(button => {
+    button.addEventListener("click", () =>
+      switchPage(button.dataset.page, button)
+    );
+  });
+
+  ["tableSearch","globalSearch","statusFilter","sortBy"].forEach(id => {
+    $(id).addEventListener("input", renderTable);
+    $(id).addEventListener("change", renderTable);
+  });
+
+  $("applicationForm").addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const editId = $("editId").value;
+    const company = $("company").value.trim();
+    const role = $("role").value.trim();
+
+    if (!company || !role) return;
+
+    const existing = editId
+      ? applications.find(app => String(app.id) === String(editId))
+      : null;
+
+    const newFollowUpDate = $("followUpDate").value || null;
+    const oldFollowUpDate = existing?.followUpDate
+      ? String(existing.followUpDate).slice(0, 10)
+      : null;
+
+    const payload = {
+      company,
+      role,
+      location:$("location").value.trim(),
+      appliedDate:$("appliedDate").value || null,
+      status:$("status").value,
+      jobUrl:$("jobUrl").value.trim(),
+      notes:$("notes").value.trim(),
+      jobType:$("jobType").value,
+      followUpDate:newFollowUpDate,
+      followUpDone:existing && oldFollowUpDate === newFollowUpDate
+        ? Boolean(existing.followUpDone)
+        : false
+    };
+
+    try {
+      if (editId) {
+        await apiRequest(`${API}/${encodeURIComponent(editId)}`, {
+          method:"PUT",
+          body:JSON.stringify(payload)
+        });
+        notify("Application updated in database.");
+      } else {
+        await apiRequest(API, {
+          method:"POST",
+          body:JSON.stringify(payload)
+        });
+        notify("Application saved in database.");
+      }
+
+      closeModal();
+      await loadApplications();
+    } catch (error) {
+      console.error(error);
+      notify("Save failed: " + error.message);
+    }
+  });
+
+  $("applicationsBody").addEventListener("click", async event => {
+    const editButton = event.target.closest("[data-edit]");
+    const deleteButton = event.target.closest("[data-delete]");
+    const openButton = event.target.closest("[data-open]");
+
+    if (editButton) {
+      const app = applications.find(
+        item => String(item.id) === editButton.dataset.edit
+      );
+      if (app) openModal(app);
+    }
+
+    if (deleteButton) {
+      const app = applications.find(
+        item => String(item.id) === deleteButton.dataset.delete
+      );
+
+      if (app && confirm(`Delete the application for ${app.company}?`)) {
+        try {
+          await apiRequest(`${API}/${encodeURIComponent(app.id)}`, {
+            method:"DELETE"
+          });
+          await loadApplications();
+          notify("Application deleted from database.");
+        } catch (error) {
+          console.error(error);
+          notify("Delete failed: " + error.message);
+        }
+      }
+    }
+
+    if (openButton) {
+      const app = applications.find(
+        item => String(item.id) === openButton.dataset.open
+      );
+
+      if (app?.jobUrl) {
+        window.open(app.jobUrl, "_blank", "noopener,noreferrer");
+      }
+    }
+  });
+
+  $("sectionContent").addEventListener("click", async event => {
+    const actionButton = event.target.closest("[data-reminder-action]");
+    const editButton = event.target.closest("[data-reminder-edit]");
+
+    if (actionButton) {
+      const done = actionButton.dataset.reminderAction === "done";
+      await setReminderDone(actionButton.dataset.id, done);
+    }
+
+    if (editButton) {
+      const app = applications.find(
+        item => String(item.id) === editButton.dataset.reminderEdit
+      );
+      if (app) openModal(app);
+    }
+  });
+
+  // Resume form uses a separate listener and does not affect application forms.
+  $("sectionContent").addEventListener("submit", analyzeResume);
+
+  $("exportBtn").addEventListener("click", exportCsv);
+  $("quickExport").addEventListener("click", exportCsv);
+
+  $("quickFollow").addEventListener("click", () => {
+    const button = document.querySelector('[data-page="Tasks & Reminders"]');
+    switchPage("Tasks & Reminders", button);
+  });
+
+  // Load existing database records on startup.
+  loadApplications();
+})();
+</script>
+</body>
+</html>
